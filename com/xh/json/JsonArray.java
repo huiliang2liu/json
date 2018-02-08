@@ -80,7 +80,7 @@ public class JsonArray {
 	}
 
 	private long string2long(String key, int into) {
-		return Integer.valueOf(key, into);
+		return Long.valueOf(key, into);
 	}
 
 	public long getLong(int i, int into) {
@@ -91,7 +91,7 @@ public class JsonArray {
 					return string2long(value.substring(2), 16);
 				return string2long(value, 16);
 			}
-			return Long.valueOf(getString(i), into);
+			return string2long(getString(i), into);
 		} catch (NumberFormatException e) {
 			// TODO: handle exception
 			throw e;
