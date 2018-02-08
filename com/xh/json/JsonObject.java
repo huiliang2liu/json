@@ -1,96 +1,55 @@
 package com.xh.json;
 
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 /**
- * json com.xh.json 2018 2018-1-29 下午4:29:20 instructions： author:liuhuiliang
+ * json com.xh.json 2018 2018-2-8 下午3:25:33 instructions： author:liuhuiliang
  * email:825378291@qq.com
  **/
 
 public class JsonObject {
-	public static char POINT = '\"';
-	public static char semicolon = ':';
-	public static char comma = ',';
-	public final static char LEFT_BARCKETS = '[';
-	public final static char RIGHT_BARCKETS = ']';
-	public final static char LEFT_CURLY_BRACES = '{';
-	public final static char RIGHT_CURLY_BRACES = '}';
 	List<Entity> entities;
 	List<String> keys;
 
-	protected JsonObject(byte[] buff) throws Exception {
+	public JsonObject(Reader reader) throws Exception {
 		// TODO Auto-generated constructor stub
-		entities = new ArrayList<>();
 		keys = new ArrayList<>();
-		// StringBuffer sb = new StringBuffer();
-
+		entities = new ArrayList<>();
+		int len = -1;
 		String key = null;
-		int startWidth = 0;
-		int len = 0;
-		for (int i = 1; i < buff.length; i++) {
-			int c = buff[i];
-			int k = i;
-			if (c == LEFT_CURLY_BRACES) {
-				int t = 0;
-				for (i++; i < buff.length - 1; i++) {
-					int b = buff[i];
-					if (b == LEFT_CURLY_BRACES) {
-						t++;
-					} else if (b == RIGHT_CURLY_BRACES) {
-						if (t == 0) {
-							byte[] by = new byte[i - k + 1];
-							System.arraycopy(buff, k, by, 0, by.length);
-							entities.add(new Entity(key, new JsonObject(by)));
-							keys.add(key);
-							break;
-						} else
-							t--;
-					}
+		Object value = null;
+		StringBuffer sb = new StringBuffer();
+		while ((len = reader.read()) != -1) {
+			if (len == Constant.LEFT_BARCKETS) {// 开始数组
+				value = new JsonArray(reader);
+			} else if (len == Constant.LEFT_CURLY_BRACES) {// 开始对象
+				value = new JsonObject(reader);
+			} else if (len == Constant.RIGHT_CURLY_BRACES) {// 结束自己
+				if (sb.length() > 0) {
+					value = sb.toString();
+					sb.setLength(0);
 				}
-			} else if (c == LEFT_BARCKETS) {
-				int t = 0;
-				for (i++; i < buff.length - 1; i++) {
-					int b = buff[i];
-					if (b == LEFT_BARCKETS) {
-						t++;
-					} else if (b == RIGHT_BARCKETS) {
-						if (t == 0) {
-							byte[] by = new byte[i - k + 1];
-							System.arraycopy(buff, k, by, 0, by.length);
-							entities.add(new Entity(key, new JsonArray(by)));
-							keys.add(key);
-							break;
-						} else
-							t--;
-					}
-				}
-			} else if (c == POINT) {
-				// if (add) {
-				// add = false;
-				// } else
-				// add = true;
-			} else if (c == semicolon) {
-				key = new String(buff, startWidth, len, JsonPars.EN_CODE);
-				// sb.setLength(0);
-				len = 0;
-			} else if (c == comma) {
-				entities.add(new Entity(key, new String(buff, startWidth, len,
-						JsonPars.EN_CODE)));
 				keys.add(key);
-				len = 0;
-			} else if (c == RIGHT_CURLY_BRACES) {
-				if (len > 0) {
-					entities.add(new Entity(key, new String(buff, startWidth,
-							len, JsonPars.EN_CODE)));
-					keys.add(key);
-					len = 0;
+				entities.add(new Entity(key, value));
+				break;
+			} else if (len == Constant.POINT) {
+
+			} else if (len == Constant.comma) {
+				if (sb.length() > 0) {
+					value = sb.toString();
+					sb.setLength(0);
 				}
+				keys.add(key);
+				entities.add(new Entity(key, value));
+				value = null;
+			} else if (len == Constant.semicolon) {
+				key = sb.toString();
+				sb.setLength(0);
 			} else {
-				if (len == 0)
-					startWidth = i;
-				len++;
+				sb.append((char) len);
 			}
 		}
 	}
@@ -103,7 +62,8 @@ public class JsonObject {
 	}
 
 	public String getString(String key) {
-		return get(key).toString();
+		Object object = get(key);
+		return object == null ? "" : object.toString();
 	}
 
 	public int getInt(String key, int into) {
@@ -207,7 +167,7 @@ public class JsonObject {
 					sb.append("\"").append(entity.object.toString())
 							.append("\"");
 				} else
-					sb.append(entity.object.toString());
+					sb.append(entity.object);
 				sb.append(",");
 			}
 			return "{" + sb.substring(0, sb.length() - 1) + "}";

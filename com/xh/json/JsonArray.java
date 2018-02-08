@@ -1,85 +1,45 @@
 package com.xh.json;
 
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * json com.xh.json
- * 2018 2018-1-29 ‰∏ãÂçà4:28:48
- * instructionsÔºö
- * author:liuhuiliang  email:825378291@qq.com
+ * json com.xh.json 2018 2018-2-8 œ¬ŒÁ3:26:09 instructions£∫ author:liuhuiliang
+ * email:825378291@qq.com
  **/
 
 public class JsonArray {
-	public static char POINT = '\"';
-	public static char comma = ',';
-	public final static char LEFT_BARCKETS = '[';
-	public final static char RIGHT_BARCKETS = ']';
-	public final static char LEFT_CURLY_BRACES = '{';
-	public final static char RIGHT_CURLY_BRACES = '}';
 	List<Object> objects2;
 
-	public JsonArray(byte[] buff) throws Exception {
+	public JsonArray(Reader reader) throws Exception {
 		// TODO Auto-generated constructor stub
 		objects2 = new ArrayList<>();
-		int startWidth = 0;
-		int len = 0;
-		for (int i = 1; i < buff.length; i++) {
-			int c = buff[i];
-			int k = i;
-			if (c == LEFT_CURLY_BRACES) {
-				int t = 0;
-				for (i++; i < buff.length - 1; i++) {
-					int b = buff[i];
-					if (b == LEFT_CURLY_BRACES) {
-						t++;
-					} else if (b == RIGHT_CURLY_BRACES) {
-						if (t == 0) {
-							byte[] by = new byte[i - k + 1];
-							System.arraycopy(buff, k, by, 0, by.length);
-							objects2.add(new JsonObject(by));
-							break;
-						} else
-							t--;
-					}
+		Object value = null;
+		int len = -1;
+		StringBuffer sb = new StringBuffer();
+		while ((len = reader.read()) != -1) {
+			if (len == Constant.LEFT_BARCKETS) {// ø™ º ˝◊È
+				value = new JsonArray(reader);
+			} else if (len == Constant.LEFT_CURLY_BRACES) {// ø™ º∂‘œÛ
+				value = new JsonObject(reader);
+			} else if (len == Constant.RIGHT_BARCKETS) {// Ω· ¯◊‘º∫
+				if (sb.length() > 0) {
+					value = sb.toString();
+					sb.setLength(0);
 				}
-			} else if (c == LEFT_BARCKETS) {
-				int t = 0;
-				for (i++; i < buff.length - 1; i++) {
-					int b = buff[i];
-					if (b == LEFT_BARCKETS) {
-						t++;
-					} else if (b == RIGHT_BARCKETS) {
-						if (t == 0) {
-							byte[] by = new byte[i - k + 1];
-							System.arraycopy(buff, k, by, 0, by.length);
-							objects2.add(new JsonArray(by));
-							break;
-						} else
-							t--;
-					}
+				objects2.add(value);
+				break;
+			} else if (len == Constant.POINT) {
+
+			} else if (len == Constant.comma) {
+				if (sb.length() > 0) {
+					value = sb.toString();
+					sb.setLength(0);
 				}
-			} else if (c == POINT) {
-				// if (add) {
-				// add = false;
-				// } else
-				// add = true;
-			} else if (c == comma) {
-				if (len > 0) {
-					objects2.add(new String(buff, startWidth, len,
-							JsonPars.EN_CODE));
-					len = 0;
-				}
-			} else if (c == RIGHT_BARCKETS) {
-				if (len > 0) {
-					objects2.add(new String(buff, startWidth, len,
-							JsonPars.EN_CODE));
-					len = 0;
-				}
+				objects2.add(value);
 			} else {
-				if (len == 0)
-					startWidth = i;
-				len++;
+				sb.append((char) len);
 			}
 		}
 	}
@@ -89,7 +49,8 @@ public class JsonArray {
 	}
 
 	public String getString(int i) {
-		return get(i).toString();
+		Object object = get(i);
+		return object == null ? "" : object.toString();
 	}
 
 	public int getInt(int i, int into) {
@@ -187,7 +148,7 @@ public class JsonArray {
 					sb.append("\"").append(objects2.get(i).toString())
 							.append("\"");
 				} else
-					sb.append(objects2.get(i).toString());
+					sb.append(objects2.get(i));
 				sb.append(",");
 			}
 			return "[" + sb.substring(0, sb.length() - 1) + "]";
