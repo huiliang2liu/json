@@ -1,6 +1,13 @@
 package com.xh.json;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringReader;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -14,10 +21,13 @@ public class JsonObject {
 	List<Entity> entities;
 	List<String> keys;
 
-	public JsonObject(Reader reader) throws Exception {
+	protected JsonObject(Reader reader) throws Exception {
 		// TODO Auto-generated constructor stub
-		keys = new ArrayList<>();
-		entities = new ArrayList<>();
+		init();
+		pars1(reader);
+	}
+
+	private JsonObject pars1(Reader reader) throws Exception {
 		int len = -1;
 		String key = null;
 		Object value = null;
@@ -52,6 +62,105 @@ public class JsonObject {
 				sb.append((char) len);
 			}
 		}
+
+		return this;
+	}
+
+	public JsonObject() {
+		// TODO Auto-generated constructor stub
+		init();
+	}
+
+	private void init() {
+		// TODO Auto-generated method stub
+		keys = new ArrayList<>();
+		entities = new ArrayList<>();
+	}
+
+	protected JsonObject pars(Reader reader) throws Exception {
+		int len = -1;
+		String key = null;
+		Object value = null;
+		StringBuffer sb = new StringBuffer();
+		len = reader.read();
+		if (len != Constant.LEFT_CURLY_BRACES)
+			throw new RuntimeException("is not jsonObject");
+		while ((len = reader.read()) != -1) {
+			if (len == Constant.LEFT_BARCKETS) {// 开始数组
+				value = new JsonArray(reader);
+			} else if (len == Constant.LEFT_CURLY_BRACES) {// 开始对象
+				value = new JsonObject(reader);
+			} else if (len == Constant.RIGHT_CURLY_BRACES) {// 结束自己
+				if (sb.length() > 0) {
+					value = sb.toString();
+					sb.setLength(0);
+				}
+				keys.add(key);
+				entities.add(new Entity(key, value));
+				break;
+			} else if (len == Constant.POINT) {
+
+			} else if (len == Constant.comma) {
+				if (sb.length() > 0) {
+					value = sb.toString();
+					sb.setLength(0);
+				}
+				keys.add(key);
+				entities.add(new Entity(key, value));
+				value = null;
+			} else if (len == Constant.semicolon) {
+				key = sb.toString();
+				sb.setLength(0);
+			} else {
+				sb.append((char) len);
+			}
+		}
+
+		return this;
+	}
+
+	public JsonObject pars(InputStream is) throws Exception {
+		return pars(new InputStreamReader(is));
+	}
+
+	public JsonObject pars(InputStream is, String charsetName) throws Exception {
+		return pars(new InputStreamReader(is, charsetName));
+	}
+
+	public JsonObject pars(String string) throws Exception {
+		return pars(new StringReader(string));
+	}
+
+	public JsonObject pars(URL url) throws Exception {
+		return pars(url.openStream());
+	}
+
+	public JsonObject pars(URL url, String charsetName) throws Exception {
+		return pars(url.openStream(), charsetName);
+	}
+
+	public JsonObject parsUrl(String url) throws Exception {
+		return pars(new URL(url));
+	}
+
+	public JsonObject parsUrl(String url, String charsetName) throws Exception {
+		return pars(new URL(url), charsetName);
+	}
+
+	public JsonObject pars(File file) throws Exception {
+		return pars(new FileReader(file));
+	}
+
+	public JsonObject parsFile(String file) throws Exception {
+		return pars(new FileReader(file));
+	}
+
+	public JsonObject pars(URI url) throws Exception {
+		return pars(url.toURL());
+	}
+
+	public JsonObject parsUri(String uri) throws Exception {
+		return pars(new URI(uri));
 	}
 
 	public Object get(String key) {
