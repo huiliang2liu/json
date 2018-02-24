@@ -244,7 +244,9 @@ public class ParsObject {
 		try {
 			if (value.startsWith("0x"))
 				return Long.valueOf(value.substring(2), 16);
-			return Long.valueOf(value, 16);
+			if (value.startsWith("0"))
+				return Long.valueOf(value.substring(1), 8);
+			return Long.valueOf(value, 10);
 		} catch (NumberFormatException e) {
 			// TODO: handle exception
 			throw e;

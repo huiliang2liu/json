@@ -232,6 +232,8 @@ public class ParsArray {
 		String value = getString(i);
 		if (value.startsWith("0x"))
 			return string2long(value.substring(2), 16);
+		if (value.startsWith("0"))
+			return string2long(value.substring(1), 8);
 		return string2long(value, 10);
 	}
 
