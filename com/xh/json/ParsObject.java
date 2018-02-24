@@ -28,7 +28,6 @@ public class ParsObject {
 	protected ParsObject(Reader reader, Class cl) throws Exception {
 		// TODO Auto-generated constructor stub
 		this(cl);
-		System.out.println(cl.getName());
 		pars1(reader);
 	}
 
