@@ -23,7 +23,11 @@ import com.xh.reflect.FieldManager;
 
 public class ParsObject {
 	private Class cl;
-	Object object;
+	private Object object;
+
+	public Object getObject() {
+		return object;
+	}
 
 	protected ParsObject(Reader reader, Class cl) throws Exception {
 		// TODO Auto-generated constructor stub
@@ -98,7 +102,7 @@ public class ParsObject {
 			}
 		}
 		if (mClass != null) {
-			List objects2 = new ParsArray(reader, mClass).objects2;
+			List objects2 = new ParsArray(reader, mClass).getObjects();
 			if (isList)
 				FieldManager.set_field(object, field, objects2);
 			else

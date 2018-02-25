@@ -19,8 +19,12 @@ import java.util.List;
  **/
 
 public class ParsArray {
-	List objects2;
+	private List objects2;
 	Class cl;
+
+	public List getObjects() {
+		return objects2;
+	}
 
 	protected ParsArray(Reader reader, Class cl) throws Exception {
 		// TODO Auto-generated constructor stub
@@ -56,7 +60,7 @@ public class ParsArray {
 					objects2.add(object);
 				}
 			} else if (len == Constant.LEFT_CURLY_BRACES) {// 开始对象
-				objects2.add(new ParsObject(reader, cl).object);
+				objects2.add(new ParsObject(reader, cl).getObject());
 			} else if (len == Constant.RIGHT_BARCKETS) {// 结束自己
 				if (sb.length() > 0) {
 					value = sb.toString();
@@ -98,7 +102,7 @@ public class ParsArray {
 					objects2.add(object);
 				}
 			} else if (len == Constant.LEFT_CURLY_BRACES) {// 开始对象
-				objects2.add(new ParsObject(reader, cl).object);
+				objects2.add(new ParsObject(reader, cl).getObject());
 			} else if (len == Constant.RIGHT_BARCKETS) {// 结束自己
 				if (sb.length() > 0) {
 					value = sb.toString();
